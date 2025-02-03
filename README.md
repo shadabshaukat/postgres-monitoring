@@ -166,7 +166,7 @@ Special Characters in Passwords:
 
 The dashboard uses the following SQL queries to monitor PostgreSQL performance:
 
-Top 10 Queries by Execution Time
+[1] Top 10 Queries by Execution Time
 
 ```
 WITH snapshot AS (
@@ -185,57 +185,57 @@ ORDER BY total_time DESC
 LIMIT 10;
 ```
 
-Index Usage Statistics
+[2] Index Usage Statistics
 ```
 SELECT schemaname, relname, indexrelname, idx_scan
 FROM pg_stat_user_indexes;
 ```
 
-Current Locks
+[3] Current Locks
 ```
 SELECT l.locktype, l.relation::regclass, l.mode, l.granted, l.pid, a.query
 FROM pg_locks l
 JOIN pg_stat_activity a ON l.pid = a.pid;
 ```
 
-Cache Hit Ratio
+[4] Cache Hit Ratio
 ```
 SELECT datname, (blks_hit::float / (blks_hit + blks_read + 1)) * 100 AS cache_hit_ratio
 FROM pg_stat_database;
 ```
 
-Replication Lag
+[5] Replication Lag
 ```
 SELECT client_addr, state, write_lag
 FROM pg_stat_replication;
 ```
 
-Connection Counts by State
+[6] Connection Counts by State
 ```
 SELECT state, COUNT(*)
 FROM pg_stat_activity
 GROUP BY state;
 ```
 
-Dead Tuples and Autovacuum
+[7] Dead Tuples and Autovacuum
 ```
 SELECT schemaname, relname, n_dead_tup, last_autovacuum
 FROM pg_stat_user_tables;
 ```
 
-WAL Activity
+[8] WAL Activity
 ```
 SELECT wal_bytes, stats_reset
 FROM pg_stat_wal;
 ```
 
-Background Writer Stats
+[9] Background Writer Stats
 ```
 SELECT checkpoints_timed, buffers_checkpoint
 FROM pg_stat_bgwriter;
 ```
 
-Table and Index Sizes
+[10] Table and Index Sizes
 ```
 SELECT relname, pg_size_pretty(pg_total_relation_size(relid))
 FROM pg_stat_user_tables;
