@@ -124,6 +124,17 @@ Verify the container is running:
 docker container ls
 ```
 
+Stop the Container:
+```
+docker-compose stop
+```
+
+Stop and Remove the Container:
+```
+docker-compose down
+```
+
+
 ## 5. Access the Dashboard
 
 Open your browser and navigate to:
