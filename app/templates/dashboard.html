@@ -11,7 +11,7 @@
 </head>
 <body>
     <h1>PostgreSQL Monitoring</h1>
-
+    
     <div>
         <select id="dbSelector" onchange="loadAllData()">
             <option value="">Select Database</option>
@@ -19,7 +19,6 @@
             <option value="{{ db }}">{{ db }}</option>
             {% endfor %}
         </select>
-        <input id="hours" type="number" value="1" min="1" placeholder="Hours">
     </div>
 
     <div id="metrics"></div>
@@ -40,27 +39,26 @@
 
         async function fetchData(endpoint) {
             const db = document.getElementById('dbSelector').value;
-            const hours = document.getElementById('hours').value;
-            if(!db) return;
+            if (!db) return;
 
             try {
-                const params = new URLSearchParams({db_name: db});
-                if(endpoint.url.includes('top_queries')) params.set('hours', hours);
-
+                const params = new URLSearchParams({ db_name: db });
                 const response = await axios.get(`${endpoint.url}?${params}`);
                 renderMetric(endpoint.name, response.data);
-            } catch(error) {
+            } catch (error) {
                 console.error(`Error fetching ${endpoint.name}:`, error);
             }
         }
 
         function renderMetric(title, data) {
             let html = `<div class="metric-card"><h3>${title}</h3><table>`;
-            if(data.length > 0) {
+            if (data.length > 0) {
                 html += '<tr>' + Object.keys(data[0]).map(k => `<th>${k}</th>`).join('') + '</tr>';
                 html += data.map(row =>
                     '<tr>' + Object.values(row).map(v => `<td>${v}</td>`).join('') + '</tr>'
                 ).join('');
+            } else {
+                html += '<tr><td colspan="3">No data available</td></tr>';
             }
             html += '</table></div>';
             document.getElementById('metrics').insertAdjacentHTML('beforeend', html);
@@ -68,7 +66,7 @@
 
         async function loadAllData() {
             document.getElementById('metrics').innerHTML = '';
-            for(const endpoint of endpoints) {
+            for (const endpoint of endpoints) {
                 await fetchData(endpoint);
             }
         }
