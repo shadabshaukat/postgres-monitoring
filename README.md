@@ -88,3 +88,27 @@ services:
       - "8000:8000"
 ```
 
+## 4. Build and Run the Docker Container for the FAST API Application
+
+Build the Docker image:
+```
+docker-compose build
+```
+
+Start the container:
+```
+docker-compose up -d
+```
+
+Verify the Deployment:
+```
+docker-compose logs -f
+```
+
+Verify the container is running:
+```
+docker container ls
+```
+
+
+
