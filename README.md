@@ -12,12 +12,14 @@ This guide provides step-by-step instructions to deploy a PostgreSQL monitoring 
    2. Setup PostgreSQL
 
    3. Build and Deploy the FastAPI Application
+   
+   4. Build and Run the Docker Container for the FAST API Application
 
-   4. Access the Dashboard
+   5. Access the Dashboard
 
-   5. Troubleshooting
+   6. Troubleshooting
 
-   6. Appendix: SQL Queries
+   7. Appendix: SQL Queries
 
 ## 1. Prerequisites
 
@@ -110,5 +112,40 @@ Verify the container is running:
 docker container ls
 ```
 
+## 5. Access the Dashboard
+
+Open your browser and navigate to:
+```
+http://localhost:8000
+```
+
+Use the dropdown to select a database and view performance metrics.
 
 
+## 6. Troubleshooting
+
+Common Issues
+
+    Port Not Bound:
+
+        Ensure the container is running:
+       
+        docker container ls
+       
+
+        Check the logs for errors
+       
+        docker-compose logs -f
+        
+
+Database Connection Errors:
+
+        Verify the connection strings in the .env file.
+
+        Test the connection strings manually using psql.
+
+        psql "postgresql://postgres:RAbbithole1234%23%5F@10.180.2.171:5432/postgres"
+
+Special Characters in Passwords:
+
+        URL-encode special characters in passwords (e.g., # → %23, _ → %5F).
