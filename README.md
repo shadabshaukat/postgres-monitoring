@@ -74,8 +74,7 @@ GCP    :  https://cloud.google.com/sql/docs/postgres/extensions
 Clone the repository containing the FastAPI application:
 
 ```
-git clone https://github.com/shadabshaukat/postgres-monitoring.git
-cd postgres-monitoring
+git clone https://github.com/shadabshaukat/postgres-monitoring.git && cd postgres-monitoring
 ```
 
 Set Up Environment Variables
