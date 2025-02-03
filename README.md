@@ -81,7 +81,7 @@ cd postgres-monitoring
 Set Up Environment Variables
 
 ```
-export DATABASES='{"prod_db":"postgresql://postgres:1234%23%5F@10.180.2.171:5432/postgres","stage_db":"postgresql://postgres:1234%23%5F@10.180.2.228:5432/dvdrental"}'
+export DATABASES='{"prod_db":"postgresql://postgres:YOurPassword1234%23%5F@10.180.2.171:5432/postgres","stage_db":"postgresql://postgres:YOurPassword1234%23%5F@10.180.2.228:5432/dvdrental"}'
 ```
 
 Replace the connection strings with your actual database credentials. URL-encode special characters in passwords (e.g., # → %23, _ → %5F). Ref : https://www.w3schools.com/tags/ref_urlencode.ASP 
