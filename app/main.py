@@ -37,11 +37,11 @@ async def list_databases():
     return list(DATABASES.keys())
 
 @app.get("/query/top_queries")
-async def top_queries(db_name: str, hours: int = 1):
+async def top_queries(db_name: str):
     async with db_pools[db_name].acquire() as conn:
         try:
             return await conn.fetch(
-                """SELECT query, calls, total_exec_time, rows
+                """SELECT query, calls, total_exec_time
                 FROM pg_stat_statements
                 WHERE query != '<insufficient privilege>'
                 ORDER BY total_exec_time DESC
