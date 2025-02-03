@@ -39,22 +39,16 @@ async def list_databases():
 @app.get("/query/top_queries")
 async def top_queries(db_name: str, hours: int = 1):
     async with db_pools[db_name].acquire() as conn:
-        return await conn.fetch(
-            """WITH snapshot AS (
-                SELECT queryid, query, calls, total_exec_time, rows
+        try:
+            return await conn.fetch(
+                """SELECT query, calls, total_exec_time, rows
                 FROM pg_stat_statements
                 WHERE query != '<insufficient privilege>'
+                ORDER BY total_exec_time DESC
+                LIMIT 10"""
             )
-            SELECT current.queryid, current.query,
-                   current.calls - COALESCE(snapshot.calls, 0) AS calls,
-                   current.total_exec_time - COALESCE(snapshot.total_exec_time, 0) AS total_time,
-                   current.rows - COALESCE(snapshot.rows, 0) AS rows
-            FROM pg_stat_statements current
-            LEFT JOIN snapshot ON current.queryid = snapshot.queryid
-            ORDER BY total_time DESC
-            LIMIT 10""",
-            hours
-        )
+        except asyncpg.exceptions.UndefinedTableError:
+            return {"error": "pg_stat_statements extension is not installed or enabled."}
 
 @app.get("/query/index_usage")
 async def index_usage(db_name: str):
