@@ -179,19 +179,9 @@ The dashboard uses the following SQL queries to monitor PostgreSQL performance:
 [1] Top 10 Queries by Execution Time
 
 ```
-WITH snapshot AS (
-  SELECT queryid, query, calls, total_exec_time, rows
-  FROM pg_stat_statements
-  WHERE query != '<insufficient privilege>'
-)
-SELECT 
-  current.queryid, current.query, 
-  current.calls - COALESCE(snapshot.calls, 0) AS calls,
-  current.total_exec_time - COALESCE(snapshot.total_exec_time, 0) AS total_time,
-  current.rows - COALESCE(snapshot.rows, 0) AS rows
-FROM pg_stat_statements current
-LEFT JOIN snapshot ON current.queryid = snapshot.queryid
-ORDER BY total_time DESC
+SELECT query, calls, total_exec_time
+FROM pg_stat_statements
+WHERE query != '<insufficient privilege>'
 LIMIT 10;
 ```
 
