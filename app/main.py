@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+from datetime import datetime, timedelta
 import asyncpg
 import os
 import json
@@ -11,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 DATABASES = json.loads(os.getenv("DATABASES", "{}"))
 db_pools = {}
@@ -37,24 +40,18 @@ async def list_databases():
     return list(DATABASES.keys())
 
 @app.get("/query/top_queries")
-async def top_queries(db_name: str, hours: int = 1):
+async def top_queries(db_name: str):
     async with db_pools[db_name].acquire() as conn:
-        return await conn.fetch(
-            """WITH snapshot AS (
-                SELECT queryid, query, calls, total_exec_time, rows
+        try:
+            return await conn.fetch(
+                """SELECT query, calls, total_exec_time
                 FROM pg_stat_statements
                 WHERE query != '<insufficient privilege>'
+                ORDER BY total_exec_time DESC
+                LIMIT 10"""
             )
-            SELECT current.queryid, current.query,
-                   current.calls - COALESCE(snapshot.calls, 0) AS calls,
-                   current.total_exec_time - COALESCE(snapshot.total_exec_time, 0) AS total_time,
-                   current.rows - COALESCE(snapshot.rows, 0) AS rows
-            FROM pg_stat_statements current
-            LEFT JOIN snapshot ON current.queryid = snapshot.queryid
-            ORDER BY total_time DESC
-            LIMIT 10""",
-            hours
-        )
+        except asyncpg.exceptions.UndefinedTableError:
+            return {"error": "pg_stat_statements extension is not installed or enabled."}
 
 @app.get("/query/index_usage")
 async def index_usage(db_name: str):
@@ -105,6 +102,28 @@ async def bgwriter(db_name: str):
 async def table_sizes(db_name: str):
     async with db_pools[db_name].acquire() as conn:
         return await conn.fetch("SELECT relname, pg_size_pretty(pg_total_relation_size(relid)) FROM pg_stat_user_tables")
+
+
+@app.get("/query/metrics")
+async def get_metrics(db_name: str):
+    async with db_pools[db_name].acquire() as conn:
+        return {
+            "cache_hit": await conn.fetch("SELECT datname, blks_hit, blks_read FROM pg_stat_database"),
+            "connections": await conn.fetch("SELECT state, count(*) FROM pg_stat_activity GROUP BY state"),
+            "replication": await conn.fetch("SELECT client_addr, write_lag FROM pg_stat_replication")
+        }
+
+@app.get("/query/timeseries")
+async def get_timeseries(db_name: str):
+    async with db_pools[db_name].acquire() as conn:
+        return await conn.fetch(
+            """SELECT queryid, query, total_exec_time, calls,
+            (now() - query_start) as duration 
+            FROM pg_stat_activity 
+            WHERE query NOT LIKE '%%pg_stat_activity%%'
+            ORDER BY duration DESC 
+            LIMIT 10"""
+        )
 
 if __name__ == "__main__":
     import uvicorn
