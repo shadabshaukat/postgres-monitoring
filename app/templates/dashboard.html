@@ -68,14 +68,10 @@
     </style>
 </head>
 <body>
-<<<<<<< HEAD
     <div class="header">
-<img src="/static/postgresql-logo.png" class="logo" alt="PostgreSQL Logo">
+        <img src="/static/postgresql-logo.png" class="logo" alt="PostgreSQL Logo">
         <h1>PostgreSQL Performance Dashboard</h1>
     </div>
-=======
-    <h1>PostgreSQL Monitoring</h1>
->>>>>>> ed8aab70ea15e774e16fc81ea6c3036851569c8a
     
     <div>
         <select id="dbSelector" class="tab-btn" onchange="loadData()">
@@ -130,7 +126,6 @@
 
         async function loadData() {
             const db = document.getElementById('dbSelector').value;
-<<<<<<< HEAD
             if(!db) return;
 
             // Load query data
@@ -198,37 +193,6 @@
                     data.replication.map(d => d.write_lag),
                     'Write Lag (ms)'
                 );
-=======
-            if (!db) return;
-
-            try {
-                const params = new URLSearchParams({ db_name: db });
-                const response = await axios.get(`${endpoint.url}?${params}`);
-                renderMetric(endpoint.name, response.data);
-            } catch (error) {
-                console.error(`Error fetching ${endpoint.name}:`, error);
-            }
-        }
-
-        function renderMetric(title, data) {
-            let html = `<div class="metric-card"><h3>${title}</h3><table>`;
-            if (data.length > 0) {
-                html += '<tr>' + Object.keys(data[0]).map(k => `<th>${k}</th>`).join('') + '</tr>';
-                html += data.map(row =>
-                    '<tr>' + Object.values(row).map(v => `<td>${v}</td>`).join('') + '</tr>'
-                ).join('');
-            } else {
-                html += '<tr><td colspan="3">No data available</td></tr>';
-            }
-            html += '</table></div>';
-            document.getElementById('metrics').insertAdjacentHTML('beforeend', html);
-        }
-
-        async function loadAllData() {
-            document.getElementById('metrics').innerHTML = '';
-            for (const endpoint of endpoints) {
-                await fetchData(endpoint);
->>>>>>> ed8aab70ea15e774e16fc81ea6c3036851569c8a
             }
         }
 
@@ -277,4 +241,3 @@
     </script>
 </body>
 </html>
-
