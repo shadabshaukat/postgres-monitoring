@@ -2,18 +2,83 @@
 <html>
 <head>
     <title>PostgreSQL Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
-        .metric-card { border: 1px solid #ddd; padding: 15px; margin: 10px; border-radius: 5px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }
+        :root {
+            --primary: #336791;
+            --background: #ffffff;
+        }
+        
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--background);
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            height: 40px;
+            margin-right: 15px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .tab-btn {
+            padding: 10px 25px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        
+        .tab-btn.active {
+            background: #254d6b;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        
+        .chart-container {
+            height: 350px;
+            position: relative;
+        }
     </style>
 </head>
 <body>
+<<<<<<< HEAD
+    <div class="header">
+<img src="/static/postgresql-logo.png" class="logo" alt="PostgreSQL Logo">
+        <h1>PostgreSQL Performance Dashboard</h1>
+    </div>
+=======
     <h1>PostgreSQL Monitoring</h1>
+>>>>>>> ed8aab70ea15e774e16fc81ea6c3036851569c8a
     
     <div>
-        <select id="dbSelector" onchange="loadAllData()">
+        <select id="dbSelector" class="tab-btn" onchange="loadData()">
             <option value="">Select Database</option>
             {% for db in databases %}
             <option value="{{ db }}">{{ db }}</option>
@@ -21,24 +86,119 @@
         </select>
     </div>
 
-    <div id="metrics"></div>
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('queries')">Query Analysis</button>
+        <button class="tab-btn" onclick="showTab('visualization')">Performance Metrics</button>
+    </div>
+
+    <div id="queries" class="tab-content">
+        <div class="card">
+            <h2>Top 10 Queries by Execution Time</h2>
+            <div class="chart-container">
+                <canvas id="queryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div id="visualization" class="tab-content" style="display:none;">
+        <div class="grid">
+            <div class="card">
+                <h2>Cache Hit Ratio</h2>
+                <div class="chart-container">
+                    <canvas id="cacheChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Connection States</h2>
+                <div class="chart-container">
+                    <canvas id="connectionChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Replication Lag</h2>
+                <div class="chart-container">
+                    <canvas id="replicationChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
-        const endpoints = [
-            {name: 'Top Queries', url: '/query/top_queries'},
-            {name: 'Index Usage', url: '/query/index_usage'},
-            {name: 'Locks', url: '/query/locks'},
-            {name: 'Cache Hit', url: '/query/cache_hit'},
-            {name: 'Replication', url: '/query/replication'},
-            {name: 'Connections', url: '/query/connections'},
-            {name: 'Dead Tuples', url: '/query/dead_tuples'},
-            {name: 'WAL', url: '/query/wal'},
-            {name: 'BG Writer', url: '/query/bgwriter'},
-            {name: 'Table Sizes', url: '/query/table_sizes'}
-        ];
+        let queryChart, cacheChart, connectionChart, replicationChart;
 
-        async function fetchData(endpoint) {
+        async function loadData() {
             const db = document.getElementById('dbSelector').value;
+<<<<<<< HEAD
+            if(!db) return;
+
+            // Load query data
+            const queries = await axios.get(`/query/top_queries?db_name=${db}`);
+            renderQueryChart(queries.data);
+
+            // Load performance metrics
+            const metrics = await axios.get(`/query/metrics?db_name=${db}`);
+            renderMetrics(metrics.data);
+
+            // Load time series data
+            const timeseries = await axios.get(`/query/timeseries?db_name=${db}`);
+            renderTimeseries(timeseries.data);
+        }
+
+        function renderQueryChart(data) {
+            const ctx = document.getElementById('queryChart').getContext('2d');
+            
+            if(queryChart) queryChart.destroy();
+            
+            queryChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.query.substring(0, 50) + '...'),
+                    datasets: [{
+                        label: 'Execution Time (ms)',
+                        data: data.map(d => d.total_exec_time),
+                        backgroundColor: '#336791',
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: (items) => 'Query: ' + data[items[0].dataIndex].query,
+                                label: (ctx) => `Calls: ${data[ctx.dataIndex].calls}\nTime: ${ctx.raw}ms`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderMetrics(data) {
+            // Cache Hit Ratio
+            renderPieChart('cacheChart', 
+                data.cache_hit.map(d => d.datname),
+                data.cache_hit.map(d => (d.blks_hit/(d.blks_hit+d.blks_read)*100).toFixed(2)),
+                'Cache Hit Ratio (%)'
+            );
+
+            // Connection States
+            renderDoughnutChart('connectionChart',
+                data.connections.map(d => d.state),
+                data.connections.map(d => d.count),
+                'Connection States'
+            );
+
+            // Replication Lag
+            if(data.replication.length > 0) {
+                renderBarChart('replicationChart',
+                    data.replication.map(d => d.client_addr),
+                    data.replication.map(d => d.write_lag),
+                    'Write Lag (ms)'
+                );
+=======
             if (!db) return;
 
             try {
@@ -68,8 +228,53 @@
             document.getElementById('metrics').innerHTML = '';
             for (const endpoint of endpoints) {
                 await fetchData(endpoint);
+>>>>>>> ed8aab70ea15e774e16fc81ea6c3036851569c8a
             }
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            document.getElementById(tabName).style.display = 'block';
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // Chart helper functions
+        function renderPieChart(canvasId, labels, data, label) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: label,
+                        data: data,
+                        backgroundColor: ['#336791', '#4CAF50', '#FF9800']
+                    }]
+                }
+            });
+        }
+
+        function renderBarChart(canvasId, labels, data, label) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: label,
+                        data: data,
+                        backgroundColor: '#FF9800'
+                    }]
+                }
+            });
         }
     </script>
 </body>
 </html>
+
