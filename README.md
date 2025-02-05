@@ -1,6 +1,10 @@
 # Postgres Monitoring Dashboard
 A Real-Time Monitoring Dashboard for PostgreSQL 
 
+![Screenshot 2025-02-05 at 14 59 49](https://github.com/user-attachments/assets/857c4ab7-d3db-42da-bdfd-d417fb4b56bb)
+
+![Screenshot 2025-02-05 at 14 59 59](https://github.com/user-attachments/assets/7e77faaa-dfbb-4a5f-a312-95249beda37b)
+
 # Deployment Guide: PostgreSQL Monitoring Dashboard with FastAPI and Docker
 
 Step-by-step instructions to deploy a PostgreSQL monitoring dashboard using FastAPI, Docker, and pg_stat_statements. The dashboard allows you to monitor the performance of multiple PostgreSQL databases and visualize key metrics.
